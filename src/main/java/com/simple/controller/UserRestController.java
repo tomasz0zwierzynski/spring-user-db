@@ -24,7 +24,8 @@ import com.simple.service.UserRepository;
 
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:4200"}, maxAge = 4800, allowCredentials = "false")
+//@CrossOrigin(origins = {"http://localhost:4200"}, maxAge = 4800, allowCredentials = "false")
+@CrossOrigin
 @RequestMapping("/api/user")
 public class UserRestController {
 
@@ -49,23 +50,25 @@ public class UserRestController {
 		ArrayList<User> result = new ArrayList<>();
 		for(User user : repository.findAll()){
 			result.add(user);
-			//logger.info(user.toString());
 		}
 		return new ResponseEntity<ArrayList<User>>(result,HttpStatus.OK);
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public ResponseEntity<User> getUserById(@PathVariable("id") long id){
+	public ResponseEntity<?> getUserById(@PathVariable("id") long id){
 		logger.info("Retrieving user id={}",id);
 		Optional<User> user = repository.findById(id);
-		return new ResponseEntity<User>(user.get(),HttpStatus.OK);
+		if(user.isPresent()) {
+			return new ResponseEntity<User>(user.get(),HttpStatus.OK);
+		}
+		return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
 	}
 	
 	//TODO: Zapytanie o istniejacy rekord
 	@RequestMapping(value = "/", method = RequestMethod.POST)
 	public ResponseEntity<?> createUser(@RequestBody User user, UriComponentsBuilder ucBuilder){
 		logger.info("Creating new customer...");
-        //if ( !(repository.findUser(user.getFirstName(), user.getLastName())).isEmpty()) { 
+        //if ( !(repository.findUserWith(user.getFirstName(), user.getLastName())).isEmpty()) { 
         //    logger.error("Unable to create. A User with name {} {} already exist", user.getFirstName(),user.getLastName());
         //    return new ResponseEntity<String>("User already in the database!",HttpStatus.CONFLICT);
         //}
@@ -75,7 +78,7 @@ public class UserRestController {
 		//Odpowiedz: jest juz z automatu to
     	return new ResponseEntity<User>(newUser, HttpStatus.CREATED);
 	}
-							
+	
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	public ResponseEntity<User> updateUserById(@PathVariable("id") long id, @RequestBody User updatedUser){
 		logger.info("Updating user id={}",id);
@@ -85,6 +88,20 @@ public class UserRestController {
 		repository.save(user.get());
 		return new ResponseEntity<User>(user.get(),HttpStatus.OK);
 	}
+	
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<User> deleteUser(@PathVariable("id") long id) {
+        System.out.println("Fetching & Deleting User with id " + id);
+ 
+        Optional<User> user = repository.findById(id);
+        if (!user.isPresent()) {
+            System.out.println("Unable to delete. User with id " + id + " not found");
+            return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
+        }
+ 
+        repository.deleteById(id);
+        return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
+    }
 	
 		/*
 	//Tego narazie nie robie w ogóle
@@ -96,10 +113,5 @@ public class UserRestController {
 		}
 		return result;
 	}
-	*/
-	
-	//@RequestMapping("/add") //We're dealing with it right now
-	
-	
-	
+	*/	
 }
