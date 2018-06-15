@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -36,7 +37,7 @@ public class UserRestController {
 	
 	@RequestMapping("/generate")
 	public ResponseEntity<String> process(){
-		logger.info("Generating 5 customers...");
+		logger.info("Generating 5 users...");
 		// save a list of Customers // SaveAll???
 		repository.saveAll(Arrays.asList(new User("Piotrek", "Kwadrat"), new User("Franek", "Kwadrat"),
 										new User("Dawid", "Tensor"), new User("Tomasz", "Zappa"),
@@ -64,18 +65,33 @@ public class UserRestController {
 		return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
 	}
 	
+	@RequestMapping(value = "/search/", method = RequestMethod.GET)
+	public ResponseEntity<?> getSearchedUser(@RequestParam(value="term", required=true) String term){
+		logger.info("Searching for user term={}",term);
+		ArrayList<User> usersFound = repository.searchUsers(term);
+		logger.info("users Found: {}",usersFound.size());
+		if (!(usersFound.isEmpty())) {
+			return new ResponseEntity<ArrayList<User>>(usersFound,HttpStatus.OK);
+		}
+		return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
+	}
+	
 	//TODO: Zapytanie o istniejacy rekord
 	@RequestMapping(value = "/", method = RequestMethod.POST)
 	public ResponseEntity<?> createUser(@RequestBody User user, UriComponentsBuilder ucBuilder){
-		logger.info("Creating new customer...");
-        //if ( !(repository.findUserWith(user.getFirstName(), user.getLastName())).isEmpty()) { 
-        //    logger.error("Unable to create. A User with name {} {} already exist", user.getFirstName(),user.getLastName());
-        //    return new ResponseEntity<String>("User already in the database!",HttpStatus.CONFLICT);
-        //}
+		logger.info("Creating new user...");
+        if ( !(repository.findUserWith(user.getFirstName(), user.getLastName())).isEmpty()) { 
+            logger.error("Unable to create. A User with name {} {} already exist", user.getFirstName(),user.getLastName());
+            return new ResponseEntity<String>("User already in the database!",HttpStatus.CONFLICT);
+        }
+		//if (!(repository.findUser(user.getFirstName()).isEmpty())) {
+		//	logger.error("Unable to create. A User with name {} already exist", user.getFirstName());
+		//	return new ResponseEntity<String>("User already in the database!",HttpStatus.CONFLICT);
+		//}
+		
 		User newUser = new User(user.getFirstName(), user.getLastName());
 		repository.save(newUser);
-		//Jak teraz od razu odebrac dodany obiekt z bazy wzbogacony o id, ktore jest automatycznie generowane
-		//Odpowiedz: jest juz z automatu to
+										//tutaj już newUser ma id z bazy wygenerowane
     	return new ResponseEntity<User>(newUser, HttpStatus.CREATED);
 	}
 	
@@ -102,16 +118,4 @@ public class UserRestController {
         repository.deleteById(id);
         return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
     }
-	
-		/*
-	//Tego narazie nie robie w ogóle
-	@RequestMapping("/findbylastname")
-	public String fetchDataByLastName(@RequestParam("lastname") String lastName){
-		String result = "";
-		for(Customer cust: repository.findByLastName(lastName)){
-			result += cust.toString() + "<br>"; 
-		}
-		return result;
-	}
-	*/	
 }

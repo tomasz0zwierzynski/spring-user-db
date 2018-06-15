@@ -1,5 +1,6 @@
 package com.simple.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +26,18 @@ public interface UserRepository extends CrudRepository<User, Long>,UserRepositor
 	//@Query(value = "SELECT u.id, u.firstname, u.lastname FROM users u where u.firstname = :firstName and u.lastname = :lastName")
 	//public List<User> findUserWith(@Param("firstName") String firstName, @Param("lastName") String lastName); 
 	
+	//@Query(value = "SELECT DISTINCT u.firstname->>'firstName' FROM public.users u WHERE u.firstname->>'firstName'", nativeQuery = true)
+	//List<User> findUser(String firstName);
+	
+	@Query(value = "SELECT * FROM public.users u WHERE u.firstname = ?1", nativeQuery = true)
+	List<User> findUser(String firstName);
+	
+	@Query(value = "SELECT * FROM public.users u WHERE u.firstname = ?1 AND u.lastname = ?2", nativeQuery = true)
+	List<User> findUserWith(String firstName, String lastName);
+	
+	//@Query(value = "SELECT * FROM public.users u WHERE CONCAT_WS('.', u.firstname, u.lastname) LIKE '%?1%'", nativeQuery = true)
+	//ArrayList<User> searchUsers(String searchArgument);
+	
+	@Query(value = "SELECT * FROM public.users u WHERE u.firstname LIKE %?1% OR u.lastname LIKE %?1%", nativeQuery = true)
+	ArrayList<User> searchUsers(String searchArgument);
 }
