@@ -16,7 +16,6 @@ import java.util.List;
 import com.simple.model.User;
 import com.simple.service.UserRepository;
 
-import org.hibernate.engine.spi.Status;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,11 +126,28 @@ public class UserRestControllerTest {
     }    
     
     @Test
+    public void searchUserSuccess() throws Exception {
+    	mockMvc.perform(get("/api/user/search/?term=Zappa"))
+    			.andExpect(status().isOk())
+    			.andExpect(content().contentType(contentType))
+                .andExpect(jsonPath("$[0].id", is((int)this.userList.get(1).getId())))
+                .andExpect(jsonPath("$[0].firstName", is("Frank")))
+                .andExpect(jsonPath("$[0].lastName", is("Zappa")));
+    }
+    
+    @Test
+    public void searchUserFailed() throws Exception {
+    	mockMvc.perform(get("/api/user/search/?term=Random"))
+    			.andExpect(status().isNotFound());
+    }
+    
+    @Test
     public void deleteUser() throws Exception {
     	mockMvc.perform(delete("/api/user/"
     						+ this.userList.get(0).getId() ))
     			.andExpect(status().isNoContent());
     }
+        
     
     protected String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();

@@ -2,13 +2,11 @@ package com.simple.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -76,7 +74,6 @@ public class UserRestController {
 		return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
 	}
 	
-	//TODO: Zapytanie o istniejacy rekord
 	@RequestMapping(value = "/", method = RequestMethod.POST)
 	public ResponseEntity<?> createUser(@RequestBody User user, UriComponentsBuilder ucBuilder){
 		logger.info("Creating new user...");
@@ -84,11 +81,6 @@ public class UserRestController {
             logger.error("Unable to create. A User with name {} {} already exist", user.getFirstName(),user.getLastName());
             return new ResponseEntity<String>("User already in the database!",HttpStatus.CONFLICT);
         }
-		//if (!(repository.findUser(user.getFirstName()).isEmpty())) {
-		//	logger.error("Unable to create. A User with name {} already exist", user.getFirstName());
-		//	return new ResponseEntity<String>("User already in the database!",HttpStatus.CONFLICT);
-		//}
-		
 		User newUser = new User(user.getFirstName(), user.getLastName());
 		repository.save(newUser);
 										//tutaj już newUser ma id z bazy wygenerowane

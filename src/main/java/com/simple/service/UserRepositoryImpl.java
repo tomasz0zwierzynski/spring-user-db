@@ -1,7 +1,5 @@
 package com.simple.service;
 
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-
 import com.simple.model.User;
 
 public class UserRepositoryImpl implements UserRepositoryCustom{
